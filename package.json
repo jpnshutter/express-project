@@ -2,16 +2,20 @@
   "name": "express-mongo",
   "version": "1.0.0",
   "main": "server.ts",
+  "type": "module",
   "scripts": {
     "build": "tsc",
+    "start": "npx nodemon src/server.ts",
     "dev": "npx nodemon src/server.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "vercel-build": "echo hello"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@vercel/node": "^2.3.0",
     "aws-sdk": "^2.1692.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
@@ -36,6 +40,5 @@
     "prettier": "3.5.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
- 
   }
 }
