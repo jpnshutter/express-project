@@ -18,7 +18,7 @@ conn.on('error', (err) => {
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
-  limits: { fileSize: 300 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req:Request, file, cb) => {
       const allowedTypes = ['image/jpeg', 'image/png', 'video/mp4', 'application/pdf'];
       if (!allowedTypes.includes(file.mimetype)) {

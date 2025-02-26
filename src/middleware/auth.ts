@@ -71,6 +71,7 @@ export const register = async (req: Request, res:Response) => {
         email: email,
         age: age || null,
         password: hashedPassword,
+        role:"user",
         token,
       });
       await newUser.save();
@@ -98,10 +99,10 @@ res.status(400).json('miss field');
       res.status(404).json("don't have user");
       return ;
     }
-    const ism = user.matchPassword(password);
-    console.log(ism);
+    const ism =await user.matchPassword(password);
+    console.log("pass : ",ism);
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!ism) {
+    if (!isMatch) {
       res.status(401).json({ auth: isMatch });
       return ;
     }

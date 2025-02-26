@@ -2,8 +2,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express, { Express, Request, Response, NextFunction } from 'express';
+
 import mongoose from 'mongoose';
-import {  authorize } from './middleware/auth';
+import {  authorize } from './middleware/auth.js';
 import Logip from './models/Log';
 import fileRoutes from './routes/fileRoute';
 import userRoutes from './routes/userRoutes';
@@ -83,3 +84,5 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 app.listen(port, () => {
   console.log(`🚀 Server running on http://localhost:${port}`);
 });
+
+export default app ;
