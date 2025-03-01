@@ -39,8 +39,8 @@ export const addUser = async (req, res) => {
     res.json(newUser);
 };
 export const updateUser = async (req, res) => {
-    const { email, name } = req.body;
-    const updatedUser = await User.updateOne({ email: email }, { $set: { name: name || null } });
+    const { email, name,age } = req.body;
+    const updatedUser = await User.updateOne({ email: email }, { $set: { name: name , age: age  } });
     res.status(200).json(updatedUser);
     return;
 };

@@ -86,6 +86,9 @@ export const authorize = async (req, res, next) => {
         if (!process.env.SECRET_KEY) {
             throw new Error('SECRET_KEY environment variable is not defined');
         }
+        if(!jwt.verify(token,process.env.SECRET_KEY)){
+            return res.status(401).json("")
+        }
         const decoded = jwt.decode(token);
         const authall = await auths.findOne({ name: decoded.role });
         const path = req.originalUrl.split('?')[0].split('/').slice(1);
