@@ -45,7 +45,8 @@ export const login = async (req, res) => {
     try {
         const { email, password,iat } = req.body;
         console.log('test : ', email, password);
-        if (!email || !password) {
+        if ((!email || !password || typeof email != "string" || typeof password != "string")) {
+            // console.log("type :",typeof email,email["$ne"]);
             res.status(400).json('miss field');
             return;
         }
@@ -87,7 +88,7 @@ export const login = async (req, res) => {
 export const authorize = async (req, res, next) => {
     const token = req.header('Authorization')?.split(' ')[1];
     if (!token) {
-        res.redirect(301, "https://www.facebook.com");
+        res.redirect(301, "/");
         // res.status(401).json({ message: 'unauthorize' });
         return;
     }

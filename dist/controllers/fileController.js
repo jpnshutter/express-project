@@ -1,8 +1,7 @@
 import multer from 'multer';
 import mongoose from 'mongoose';
 import { GridFSBucket } from 'mongodb';
-import sharp from "sharp";
-
+// import sharp from 'sharp';
 const conn = mongoose.createConnection(process.env.MONGO_URI);
 
 let gridfsBucket;
@@ -33,26 +32,36 @@ const uploadFile = async (req, res) => {
     try {
         if (!gridfsBucket) throw new Error('GridFS not initialized');
         if (!Array.isArray(req.files) || req.files.length === 0) {
-            return res.status(404).json({ msg: 'No file found' });
+            return res.status(400).json({ error: 'No file uploaded' });
         }
 
         const file = req.files[0];
-        const tag = req.body.tags.split(",");
-        const name = req.body.name ;
-        const date = req.body.date ;
-        console.log("tagggg : ",tag);
+        const { tags, name, date } = req.body;
+        const parsedTags = tags ? tags.split(',') : [];
         const isImage = ['image/jpeg', 'image/png'].includes(file.mimetype);
-        const uniqueFilename = `${Date.now()}-${file.originalname}`;
-
+        const timestamp = Date.now();
+        const originalExt = file.originalname.split('.').pop();
+        const uniqueFilename = `${timestamp}-${file.originalname}`;
+        
         let bufferToStore = file.buffer;
         let avifFilename = null;
 
-        if (isImage) {
-            avifFilename = `${Date.now()}-${file.originalname.split('.').slice(0, -1).join('.')}.avif`;
-            bufferToStore = await sharp(file.buffer)
-                .toFormat("avif", { quality: 50 }) // Convert to AVIF with compression
-                .toBuffer();
-        }
+        // if (isImage) {
+        //     const outputFilename = `${timestamp}-${file.originalname.replace(`.${originalExt}`, '.jpg')}`;
+        //     try {
+        //       // Process image with sharp
+        //       bufferToStore = await sharp(file.buffer)
+        //         .jpeg({ quality: 80 }) // Convert to JPEG with 80% quality
+        //         .toBuffer();
+              
+        //       // Update content type
+        //       contentType = 'image/jpeg';
+        //     } catch (error) {
+        //       console.error('Image processing error:', error);
+        //       // Fall back to original buffer if processing fails
+        //       bufferToStore = file.buffer;
+        //     }
+        //   }
 
         // Upload the (converted) file to GridFS
         const uploadStream = gridfsBucket.openUploadStream(uniqueFilename, {
@@ -62,17 +71,17 @@ const uploadFile = async (req, res) => {
                 uploadDate: new Date(),
                 size: bufferToStore.length,
                 convertedToAvif: isImage,
-                tag : tag ,
-                name :name ?? null,
-                date : date ?? null
-
+                tags: parsedTags,
+                name: name || null,
+                date: date || null,
             },
         });
 
         uploadStream.end(bufferToStore);
 
         uploadStream.on('finish', () => {
-            res.status(200).json({
+            res.status(201).json({
+                message: 'File uploaded successfully',
                 contentType: isImage ? 'image/avif' : file.mimetype,
                 uniqueFilename: isImage ? avifFilename : uniqueFilename,
                 metadata: {
@@ -80,11 +89,16 @@ const uploadFile = async (req, res) => {
                     uploadDate: new Date(),
                     size: bufferToStore.length,
                     convertedToAvif: isImage,
-                    tag : tag ,
-                    name :name ?? null,
-                    date : date ?? null
+                    tags: parsedTags,
+                    name: name || null,
+                    date: date || null,
                 },
             });
+        });
+
+        uploadStream.on('error', (streamError) => {
+            console.error('GridFS upload error:', streamError);
+            res.status(500).json({ error: 'File upload failed' });
         });
     } catch (error) {
         console.error('Upload error:', error);

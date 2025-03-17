@@ -12,6 +12,7 @@ const app = express();
 const port = process.env.PORT || 5002;
 const mongoURI = process.env.MONGO_URI;
 // 🔹 Connect to MongoDB
+mongoose.set('strictQuery', true);
 const connectDB = async () => {
     try {
         if (!mongoURI)
@@ -58,7 +59,7 @@ app.use(async (req, res, next) => {
 // });
 // app.use(customLimiter);
 // 🔹 Routes
-app.use('/file', fileRoutes);
+app.use('/file',authorize, fileRoutes);
 app.use('/users', authorize, userRoutes);
 app.use('/blogs', authorize, blogRoutes);
 app.use('/auth', authRoutes);
