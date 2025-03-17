@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import auths from '../models/Role.js';
+import nodemailer from "nodemailer";
 dotenv.config();
 export const register = async (req, res) => {
     try {
@@ -42,7 +43,7 @@ export const register = async (req, res) => {
 };
 export const login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password,iat } = req.body;
         console.log('test : ', email, password);
         if (!email || !password) {
             res.status(400).json('miss field');
@@ -63,8 +64,16 @@ export const login = async (req, res) => {
         if (!process.env.SECRET_KEY) {
             throw new Error('SECRET_KEY environment variable is not defined');
         }
-        const token = jwt.sign({ email, role: user.role }, process.env.SECRET_KEY, {
-            expiresIn: '1h',
+        const payload = {
+            email: email,
+            role: user.role,
+        };
+    
+        if(iat){
+            payload.iat = iat;
+        }
+        const token = jwt.sign(payload, process.env.SECRET_KEY, {
+            expiresIn:3600
         });
         user.token = token;
         await user.save();
@@ -86,23 +95,66 @@ export const authorize = async (req, res, next) => {
         if (!process.env.SECRET_KEY) {
             throw new Error('SECRET_KEY environment variable is not defined');
         }
-        if(!jwt.verify(token,process.env.SECRET_KEY)){
-            return res.status(401).json("")
-        }
-        const decoded = jwt.decode(token);
+        const decoded = jwt.verify(token,process.env.SECRET_KEY);
+        console.log(decoded);
         const authall = await auths.findOne({ name: decoded.role });
         const path = req.originalUrl.split('?')[0].split('/').slice(1);
         const canNext = authall?.permissions.some((p) => p == path[0]);
         if (canNext) {
-            next();
+            return next();
         }
-        else {
-            res.status(301).json({ error: 'non authorize' });
+        return res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
+        }
+        catch (error) {
+            res.status(403).json({ error: error.message });
             return;
         }
-    }
-    catch (error) {
-        res.status(403).json({ error: error.message });
-        return;
-    }
 };
+
+
+export const resetpassword = async (req,res)=>{
+    try {
+        // const token =req.header('Authorization')?.split(' ')[1];
+        // if(!token){
+        //     return res.status(501).json({})
+        // }
+        const {email} = req.body;
+        if(!email){
+            res.status(400).json({})
+        }
+        if(!process.env){
+            throw new error("env isn't found")
+        }
+        const header = nodemailer.createTransport({
+            host:process.env.SMTP_HOST,
+            port:process.env.SMTP_PORT,
+            secure:true,
+            auth:{
+                user:process.env.EMAIL_USER,
+                pass:process.env.EMAIL_PASS
+            }
+        })
+        // const decode =jwt.verify(token,process.env.SECRET_KEY);
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Password Reset Request",
+            text: "Click the link below to reset your password:",
+            html: `<a href="${process.env.URL_RESETPASSWORD}/auth/resetpassword/${token}">Reset your password</a>`
+        }
+        
+        await header.sendMail(mailOptions)
+        res.status(200).json("ok")
+    } catch (error) {
+        res.status(500).json("non")
+    }
+    
+}
+
+export const resetpasswordwithtoken = (req,res)=>{
+    const token = req.params.token
+    if(!token){
+        res.status(501).json({})
+    }
+    res.status(200).json({token})
+}

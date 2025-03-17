@@ -8,8 +8,6 @@ import fileRoutes from './routes/fileRoute.js';
 import userRoutes from './routes/userRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
 import authRoutes from './routes/authRoute.js';
-import cors from 'cors';
-
 const app = express();
 const port = process.env.PORT || 5002;
 const mongoURI = process.env.MONGO_URI;
@@ -26,10 +24,8 @@ const connectDB = async () => {
     }
 };
 connectDB();
-
 // 🔹 Middleware
 app.use(express.json());
-app.use(cors({ origin: '*', credentials: true }));
 // Log IP requests
 app.use(async (req, res, next) => {
     console.log(`Request made to: ${req.ip}`);

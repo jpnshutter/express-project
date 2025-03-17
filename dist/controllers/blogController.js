@@ -40,9 +40,9 @@ export const UpdateBlog = async (req, res) => {
     }
 };
 export const AddTagByfind = async (req, res) => {
-    console.log('testtttttttt');
-    const token = req.headers;
-    console.log(token);
+    // console.log('testtttttttt');
+    // const token = req.;
+    // console.log(token);
     try {
         const updateBlog = await Blog.findByIdAndUpdate(req.params.i, { $addToSet: { tags: req.body.tag } }, { new: true }); // new:true คืนค่าเอกสารหลังอัพเดต
         res.status(200).json(updateBlog);
