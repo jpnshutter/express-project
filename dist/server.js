@@ -8,6 +8,7 @@ import fileRoutes from './routes/fileRoute.js';
 import userRoutes from './routes/userRoutes.js';
 import blogRoutes from './routes/blogRoutes.js';
 import authRoutes from './routes/authRoute.js';
+import cors from 'cors';
 const app = express();
 const port = process.env.PORT || 5002;
 const mongoURI = process.env.MONGO_URI;
@@ -27,10 +28,14 @@ const connectDB = async () => {
 connectDB();
 // 🔹 Middleware
 app.use(express.json());
+
+// 🔹 Enable CORS (Adjust origin as needed)
+app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE'], allowedHeaders: ['Content-Type', 'Authorization'] }));
+
 // Log IP requests
 app.use(async (req, res, next) => {
     console.log(`Request made to: ${req.ip}`);
-    const ip = req.ip;
+    const {ip} = req.ip;
     try {
         const existLog = await Logip.findOne({ ip });
         if (!existLog) {
@@ -70,7 +75,7 @@ app.get('/', (req, res) => {
 // 🔹 Error Handling
 app.use((err, req, res, next) => {
     console.error(err.message);
-    res.status(520).send(err.message);
+    res.status(520).send({err:"kk"});
 });
 // 🔹 Start Server
 app.listen(port, () => {

@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 export const getAllUser = async (req, res) => {
     const users = await User.find();
-    res.json(users);
+    return res.json(users);
 };
 export const qrcode = async (req, res) => {
     try {

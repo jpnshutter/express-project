@@ -4,6 +4,7 @@ import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import auths from '../models/Role.js';
 import nodemailer from "nodemailer";
+import { error } from 'console';
 dotenv.config();
 export const register = async (req, res) => {
     try {
@@ -45,12 +46,14 @@ export const login = async (req, res) => {
     try {
         const { email, password,iat } = req.body;
         console.log('test : ', email, password);
-        if ((!email || !password || typeof email != "string" || typeof password != "string")) {
+        if ((!email || !password || typeof email !== "string" || typeof password !== "string")) {
             // console.log("type :",typeof email,email["$ne"]);
-            res.status(400).json('miss field');
+            throw new error("miss field")
+            // res.status(400).json('miss field');
             return;
         }
         const user = await User.findOne({ email: email });
+        console.log("user : ",user);
         if (!user) {
             res.status(404).json("don't have user");
             return;
@@ -100,7 +103,7 @@ export const authorize = async (req, res, next) => {
         console.log(decoded);
         const authall = await auths.findOne({ name: decoded.role });
         const path = req.originalUrl.split('?')[0].split('/').slice(1);
-        const canNext = authall?.permissions.some((p) => p == path[0]);
+        const canNext = authall?.permissions.some((p) => p === path[0]);
         if (canNext) {
             return next();
         }

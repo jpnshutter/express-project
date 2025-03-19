@@ -1,7 +1,7 @@
 import multer from 'multer';
 import mongoose from 'mongoose';
 import { GridFSBucket } from 'mongodb';
-// import sharp from 'sharp';
+import sharp from 'sharp';
 const conn = mongoose.createConnection(process.env.MONGO_URI);
 
 let gridfsBucket;
@@ -46,22 +46,22 @@ const uploadFile = async (req, res) => {
         let bufferToStore = file.buffer;
         let avifFilename = null;
 
-        // if (isImage) {
-        //     const outputFilename = `${timestamp}-${file.originalname.replace(`.${originalExt}`, '.jpg')}`;
-        //     try {
-        //       // Process image with sharp
-        //       bufferToStore = await sharp(file.buffer)
-        //         .jpeg({ quality: 80 }) // Convert to JPEG with 80% quality
-        //         .toBuffer();
+        if (isImage) {
+            const outputFilename = `${timestamp}-${file.originalname.replace(`.${originalExt}`, '.jpg')}`;
+            try {
+              // Process image with sharp
+              bufferToStore = await sharp(file.buffer)
+                .jpeg({ quality: 80 }) // Convert to JPEG with 80% quality
+                .toBuffer();
               
-        //       // Update content type
-        //       contentType = 'image/jpeg';
-        //     } catch (error) {
-        //       console.error('Image processing error:', error);
-        //       // Fall back to original buffer if processing fails
-        //       bufferToStore = file.buffer;
-        //     }
-        //   }
+              // Update content type
+              contentType = 'image/jpeg';
+            } catch (error) {
+              console.error('Image processing error:', error);
+              // Fall back to original buffer if processing fails
+              bufferToStore = file.buffer;
+            }
+          }
 
         // Upload the (converted) file to GridFS
         const uploadStream = gridfsBucket.openUploadStream(uniqueFilename, {
